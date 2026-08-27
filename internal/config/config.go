@@ -117,7 +117,10 @@ func DefaultConfig() *Config {
 }
 
 // Load loads configuration from a YAML file, with environment variable overrides.
+// It also checks and loads a .env file if present in the current working directory.
 func Load(filePath string) (*Config, error) {
+	_ = LoadEnvFile(".env")
+
 	cfg := DefaultConfig()
 
 	if filePath != "" {
@@ -170,6 +173,9 @@ func applyEnvOverrides(cfg *Config) {
 	if v := os.Getenv("ZENITH_TARGET_WINRM_HTTPS"); v != "" {
 		cfg.Target.WinRMHTTPS = strings.ToLower(v) == "true" || v == "1"
 	}
+	if v := os.Getenv("ZENITH_TARGET_WINRM_INSECURE"); v != "" {
+		cfg.Target.WinRMInsecure = strings.ToLower(v) == "true" || v == "1"
+	}
 	if v := os.Getenv("ZENITH_TARGET_USERNAME"); v != "" {
 		cfg.Target.Username = v
 	}
@@ -187,6 +193,12 @@ func applyEnvOverrides(cfg *Config) {
 	}
 	if v := os.Getenv("ZENITH_TARGET_DBACCESS_LOG"); v != "" {
 		cfg.Target.DbaccessLog = v
+	}
+	if v := os.Getenv("ZENITH_TARGET_TCP_PORTS"); v != "" {
+		ports := parseTCPPortsEnv(v)
+		if len(ports) > 0 {
+			cfg.Target.TCPPorts = ports
+		}
 	}
 
 	// TSDB Overrides

@@ -31,14 +31,13 @@ services:
     depends_on:
       victoriametrics:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       - ZENITH_TSDB_URL=http://victoriametrics:8428
-      - ZENITH_LISTEN_ADDR=:8080
-      - ZENITH_MOCK_MODE=true
-      - ZENITH_AUTH_USERNAME=admin
-      - ZENITH_AUTH_PASSWORD=zenith@2026
     volumes:
       - ./config.yaml:/app/config.yaml:ro
+      - ./.env:/app/.env:ro
     ports:
       - "8080:8080"
     networks:
