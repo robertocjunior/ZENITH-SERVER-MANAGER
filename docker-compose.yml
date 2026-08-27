@@ -1,18 +1,21 @@
 name: zenith-server-manager
 
 services:
+  # ============================================================================
+  # 1. VictoriaMetrics (TSDB - Armazenamento de Séries Temporais)
+  # ============================================================================
   victoriametrics:
     image: victoriametrics/victoria-metrics:v1.98.0
     container_name: zenith-victoriametrics
     restart: unless-stopped
     command:
-      - "-retentionPeriod=30d"
+      - "-retentionPeriod=${VM_RETENTION_PERIOD:-30d}"
       - "-storageDataPath=/victoria-metrics-data"
       - "-httpListenAddr=:8428"
     volumes:
       - vmdata:/victoria-metrics-data
     ports:
-      - "8428:8428"
+      - "${VM_PORT:-8428}:8428"
     networks:
       - zenith-net
     healthcheck:
@@ -22,6 +25,9 @@ services:
       retries: 3
       start_period: 5s
 
+  # ============================================================================
+  # 2. Zenith Monitor (Coletor Agentless TOTVS Protheus & Dashboard Web)
+  # ============================================================================
   zenith-monitor:
     container_name: zenith-monitor
     restart: unless-stopped
@@ -36,13 +42,16 @@ services:
     environment:
       - ZENITH_TSDB_URL=http://victoriametrics:8428
     volumes:
-      - ./config.yaml:/app/config.yaml:ro
       - ./.env:/app/.env:ro
+      - ./config.yaml:/app/config.yaml:ro
     ports:
-      - "8080:8080"
+      - "${ZENITH_PORT:-8080}:8080"
     networks:
       - zenith-net
 
+# ==============================================================================
+# Redes & Volumes Isolados
+# ==============================================================================
 networks:
   zenith-net:
     driver: bridge

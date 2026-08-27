@@ -38,11 +38,15 @@ func LoadEnvFile(filename string) error {
 		key := strings.TrimSpace(line[:idx])
 		val := strings.TrimSpace(line[idx+1:])
 
-		// Strip surrounding quotes
-		if len(val) >= 2 {
-			if (strings.HasPrefix(val, "\"") && strings.HasSuffix(val, "\"")) ||
-				(strings.HasPrefix(val, "'") && strings.HasSuffix(val, "'")) {
-				val = val[1 : len(val)-1]
+		// Strip inline comment if unquoted
+		if strings.HasPrefix(val, "\"") && strings.HasSuffix(val, "\"") && len(val) >= 2 {
+			val = val[1 : len(val)-1]
+		} else if strings.HasPrefix(val, "'") && strings.HasSuffix(val, "'") && len(val) >= 2 {
+			val = val[1 : len(val)-1]
+		} else {
+			// Unquoted: strip comments starting with #
+			if commentIdx := strings.Index(val, "#"); commentIdx >= 0 {
+				val = strings.TrimSpace(val[:commentIdx])
 			}
 		}
 

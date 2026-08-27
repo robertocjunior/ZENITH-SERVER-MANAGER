@@ -205,6 +205,21 @@ func applyEnvOverrides(cfg *Config) {
 	if v := os.Getenv("ZENITH_TSDB_URL"); v != "" {
 		cfg.TSDB.URL = v
 	}
+	if v := os.Getenv("ZENITH_TSDB_BATCH_SIZE"); v != "" {
+		if b, err := strconv.Atoi(v); err == nil && b > 0 {
+			cfg.TSDB.BatchSize = b
+		}
+	}
+	if v := os.Getenv("ZENITH_TSDB_FLUSH_INTERVAL"); v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			cfg.TSDB.FlushInterval = d
+		}
+	}
+	if v := os.Getenv("ZENITH_TSDB_MAX_BUFFER_SIZE"); v != "" {
+		if m, err := strconv.Atoi(v); err == nil && m > 0 {
+			cfg.TSDB.MaxBufferSize = m
+		}
+	}
 
 	// Collector Overrides
 	if v := os.Getenv("ZENITH_MOCK_MODE"); v != "" {
