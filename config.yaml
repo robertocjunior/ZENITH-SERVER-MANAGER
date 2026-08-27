@@ -1,0 +1,51 @@
+# ==============================================================================
+# ZENITH SERVER MANAGER — CONFIGURAÇÃO DO COLETOR AGENTLESS PROTHEUS
+# ==============================================================================
+
+server:
+  listen_addr: ":8080"
+  auth_username: "admin"
+  auth_password: "zenith@2026"
+  auth_token: ""
+  read_timeout: 10s
+  write_timeout: 15s
+  shutdown_timeout: 10s
+
+# Parâmetros de Conexão com o Servidor Windows TOTVS Protheus
+target:
+  host: "127.0.0.1"                     # IP ou Hostname do Servidor Windows Protheus
+  winrm_port: 5985                      # Porta WinRM (5985 HTTP ou 5986 HTTPS)
+  winrm_https: false                    # Usar HTTPS para WinRM
+  winrm_insecure: true                  # Ignorar validação de certificado TLS autoassinado
+  username: "Administrator"             # Usuário de serviço com permissões WMI/WinRM e SMB
+  password: ""                          # Senha do usuário de serviço
+  domain: ""                            # Domínio Active Directory (opcional)
+  smb_share: "C$"                       # Compartilhamento administrativo SMB
+  appserver_log: "totvs/protheus/bin/appserver/console.log" # Caminho relativo ao share
+  dbaccess_log: "totvs/dbaccess/dbaccess.log"              # Caminho relativo ao share
+  tcp_ports:
+    - name: "AppServer - Balancer / Principal"
+      port: 1234
+    - name: "DBAccess - TopConnect"
+      port: 7890
+    - name: "TOTVS License Server"
+      port: 5555
+
+# Ingestão de Séries Temporais no VictoriaMetrics (TSDB)
+tsdb:
+  url: "http://victoriametrics:8428"
+  batch_size: 250                       # Quantidade de pontos por flush
+  flush_interval: 2s                    # Intervalo entre envios ao VictoriaMetrics
+  max_buffer_size: 25000                # Capacidade máxima do buffer em memória (Anti-OOM)
+  request_timeout: 5s
+  initial_retry_backoff: 1s
+  max_retry_backoff: 30s
+
+# Configurações do Coletor
+collector:
+  interval: 5s                          # Frequência de coleta
+  timeout: 10s                          # Timeout de chamadas WinRM/SMB
+  mock_mode: true                       # Modo de emulação (validação local sem servidor Windows)
+  monitored_procs:
+    - "appserver.exe"
+    - "dbaccess.exe"

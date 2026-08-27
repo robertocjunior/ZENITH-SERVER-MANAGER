@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenith Server Manager - TOTVS Protheus Agentless Monitor</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header class="navbar">
+        <div class="brand">
+            <svg class="brand-icon" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            <h1>ZENITH <span>SERVER MANAGER</span></h1>
+            <span id="host-badge" class="badge badge-mock">CARREGANDO</span>
+        </div>
+        <div class="nav-status">
+            <div><strong>Alvo:</strong> <span id="target-host-name">127.0.0.1</span></div>
+            <div><strong>Última Leitura:</strong> <span id="last-update-time">--:--:--</span></div>
+            <div><strong>TSDB:</strong> <span id="tsdb-status-badge" class="badge badge-live">CHECKING</span></div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-container">
+        <button class="tab-btn active" data-tab="overview">
+            <span>📊 Visão Geral</span>
+        </button>
+        <button class="tab-btn" data-tab="services">
+            <span>🔌 Portas & Processos</span>
+        </button>
+        <button class="tab-btn" data-tab="logs">
+            <span>📜 Logs & Alertas TOTVS</span>
+        </button>
+        <button class="tab-btn" data-tab="charts">
+            <span>📈 Histórico TSDB (SVG)</span>
+        </button>
+        <button class="tab-btn" data-tab="settings">
+            <span>⚙️ Parâmetros & Arquitetura</span>
+        </button>
+    </nav>
+
+    <!-- Main Views -->
+    <main class="main-content">
+
+        <!-- Tab 1: Overview -->
+        <section id="pane-overview" class="tab-pane active">
+            <!-- Summary Metric Cards -->
+            <div class="grid-cards-3">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Uso de CPU</span>
+                        <span class="card-unit">Windows Host</span>
+                    </div>
+                    <div class="card-value"><span id="cpu-value">0.0</span> <span class="card-unit">%</span></div>
+                    <div class="progress-bar-bg">
+                        <div id="cpu-bar" class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="card-footer-stats">
+                        <span>Win32_Processor / WinRM</span>
+                        <span>Média ponderada</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Memória RAM</span>
+                        <span class="card-unit">Física / Total</span>
+                    </div>
+                    <div class="card-value"><span id="mem-value">0.0</span> <span class="card-unit">%</span></div>
+                    <div class="progress-bar-bg">
+                        <div id="mem-bar" class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="card-footer-stats">
+                        <span id="mem-details">-- GB / -- GB</span>
+                        <span>Win32_OperatingSystem</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Armazenamento</span>
+                        <span class="card-unit">Disco Principal</span>
+                    </div>
+                    <div class="card-value"><span id="disk-value">0.0</span> <span class="card-unit">%</span></div>
+                    <div class="progress-bar-bg">
+                        <div id="disk-bar" class="progress-bar-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="card-footer-stats">
+                        <span id="disk-details">-- / --</span>
+                        <span>Win32_LogicalDisk</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitored Services Quick Overview -->
+            <div class="grid-cards-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Serviços TOTVS Protheus (TCP)</span>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Serviço</th>
+                                    <th>Porta</th>
+                                    <th>Status</th>
+                                    <th>Latência</th>
+                                    <th>Diagnóstico</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ports-table-body">
+                                <tr><td colspan="5" style="text-align:center; color:#64748b;">Aguardando primeira sincronização...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Processos Ativos (AppServer / DBAccess)</span>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Binário</th>
+                                    <th>PID</th>
+                                    <th>CPU</th>
+                                    <th>Working Set</th>
+                                    <th>Threads</th>
+                                    <th>Handles</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="processes-table-body">
+                                <tr><td colspan="7" style="text-align:center; color:#64748b;">Aguardando telemetria...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 2: Services & Ports Details -->
+        <section id="pane-services" class="tab-pane">
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <span class="card-title">Monitoramento Contínuo de Portas TCP TOTVS</span>
+                </div>
+                <p style="color:var(--text-secondary); margin-bottom:1rem; font-size:0.875rem;">
+                    Healthchecks TCP não-invasivos executados em paralelo com medição de handshake round-trip em milissegundos e backoff em caso de falha.
+                </p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Serviço Protheus</th>
+                                <th>Porta TCP</th>
+                                <th>Estado de Conectividade</th>
+                                <th>Latência de Handshake</th>
+                                <th>Detalhe / Erro</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ports-table-body-full">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 3: TOTVS Logs & Alerts -->
+        <section id="pane-logs" class="tab-pane">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Tail Remoto de Logs Protheus (SMB2: console.log / dbaccess.log)</span>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <label for="log-filter" style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Filtrar:</label>
+                        <select id="log-filter" style="background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); padding:0.35rem 0.6rem; border-radius:var(--radius-sm); font-size:0.8rem;">
+                            <option value="ALL">Todos os Níveis</option>
+                            <option value="CRITICAL">CRITICAL</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="WARN">WARN</option>
+                            <option value="INFO">INFO</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="log-stream" class="log-stream">
+                    <div style="color:#64748b; text-align:center; padding:2rem;">Conectando ao stream de logs do Protheus...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 4: Time-Series SVG Charts -->
+        <section id="pane-charts" class="tab-pane">
+            <div class="grid-cards-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Evolução de Uso da CPU (%) — SVG Nativo</span>
+                    </div>
+                    <div class="chart-box">
+                        <svg id="svg-cpu-chart"></svg>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Evolução de Uso de RAM (%) — SVG Nativo</span>
+                    </div>
+                    <div class="chart-box">
+                        <svg id="svg-mem-chart"></svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 5: Settings & Architecture -->
+        <section id="pane-settings" class="tab-pane">
+            <div class="grid-cards-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Buffer de Ingestão TSDB (VictoriaMetrics)</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.75rem; font-size:0.875rem;">
+                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.5rem;">
+                            <span style="color:var(--text-secondary);">Métricas em Buffer de Memória:</span>
+                            <strong id="tsdb-buffer-len">0</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.5rem;">
+                            <span style="color:var(--text-secondary);">Métricas Descartadas (Anti-OOM):</span>
+                            <strong id="tsdb-dropped" style="color:var(--accent-orange);">0</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:0.5rem;">
+                            <span style="color:var(--text-secondary);">Proteção de Memória:</span>
+                            <span style="color:var(--status-success); font-weight:600;">ATIVO (Ring Buffer Finito)</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:var(--text-secondary);">Protocolo de Ingestão:</span>
+                            <span>Prometheus Line Exposition / HTTP POST</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Arquitetura Agentless Protheus</span>
+                    </div>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; line-height:1.6;">
+                        O <strong>Zenith Server Manager</strong> opera de forma 100% <em>agentless</em>, sem instalar binários ou serviços terceiros dentro do servidor Windows TOTVS Protheus.<br><br>
+                        • <strong>WinRM (HTTP/HTTPS):</strong> Telemetria WMI segura com scripts PowerShell parametrizados e sanitizados contra <em>command injection</em>.<br>
+                        • <strong>SMB2 (445/TCP):</strong> Leitura de <code>console.log</code> e <code>dbaccess.log</code> via stream com controle de offset e backoff exponencial.<br>
+                        • <strong>TSDB VictoriaMetrics:</strong> Armazenamento de séries temporais de alta densidade e compressão.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div>Zenith Server Manager &bull; TOTVS Protheus Agentless Monitor</div>
+        <div>Golang + VictoriaMetrics &bull; <a href="https://github.com/robertocjunior/ZENITH-SERVER-MANAGER/" target="_blank">Repositório GitHub</a></div>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

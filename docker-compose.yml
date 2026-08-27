@@ -1,0 +1,53 @@
+name: zenith-server-manager
+
+services:
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.98.0
+    container_name: zenith-victoriametrics
+    restart: unless-stopped
+    command:
+      - "-retentionPeriod=30d"
+      - "-storageDataPath=/victoria-metrics-data"
+      - "-httpListenAddr=:8428"
+    volumes:
+      - vmdata:/victoria-metrics-data
+    ports:
+      - "8428:8428"
+    networks:
+      - zenith-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8428/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  zenith-monitor:
+    container_name: zenith-monitor
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      victoriametrics:
+        condition: service_healthy
+    environment:
+      - ZENITH_TSDB_URL=http://victoriametrics:8428
+      - ZENITH_LISTEN_ADDR=:8080
+      - ZENITH_MOCK_MODE=true
+      - ZENITH_AUTH_USERNAME=admin
+      - ZENITH_AUTH_PASSWORD=zenith@2026
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - zenith-net
+
+networks:
+  zenith-net:
+    driver: bridge
+
+volumes:
+  vmdata:
+    driver: local
