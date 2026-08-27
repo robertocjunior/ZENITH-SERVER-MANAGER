@@ -1,8 +1,8 @@
 package collector
 
 import (
-	"fmt"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/robertocjunior/zenith-server-manager/internal/config"
@@ -53,7 +53,7 @@ func (c *TCPChecker) CheckAll() []TCPServiceStatus {
 }
 
 func (c *TCPChecker) checkPort(target config.TCPPortTarget) TCPServiceStatus {
-	addr := fmt.Sprintf("%s:%d", c.Host, target.Port)
+	addr := net.JoinHostPort(c.Host, strconv.Itoa(target.Port))
 	start := time.Now()
 
 	conn, err := net.DialTimeout("tcp", addr, c.Timeout)
